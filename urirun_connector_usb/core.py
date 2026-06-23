@@ -318,7 +318,7 @@ def _summary(devices: list[dict[str, Any]]) -> dict[str, int]:
 def probe() -> dict[str, Any]:
     """Report whether USB enumeration works on this host and which helpers are available."""
     return urirun.ok(
-        connector=CONNECTOR_ID,
+        connector=CONNECTOR_ID, kind="probe", live=False,
         supported=_supported(),
         sysfs=SYS_USB,
         sysfsPresent=os.path.isdir(SYS_USB),
@@ -355,7 +355,7 @@ def list_devices(include_hubs: bool = False, category: str = "") -> dict[str, An
     wanted = category.strip().lower()
     if wanted:
         devices = [d for d in devices if d["category"] == wanted or wanted in d["roles"]]
-    return urirun.ok(connector=CONNECTOR_ID, count=len(devices),
+    return urirun.ok(connector=CONNECTOR_ID, kind="device-list", live=False, count=len(devices),
                      summary=_summary(devices), devices=devices)
 
 
@@ -392,7 +392,7 @@ def find(query: str = "", vendor_id: str = "", product_id: str = "",
         return True
 
     matched = [d for d in devices if matches(d)]
-    return urirun.ok(connector=CONNECTOR_ID, query=query, count=len(matched), devices=matched)
+    return urirun.ok(connector=CONNECTOR_ID, kind="device-list", live=False, query=query, count=len(matched), devices=matched)
 
 
 @USB.handler("cameras/query/list", isolated=True,
@@ -406,7 +406,7 @@ def cameras() -> dict[str, Any]:
     cams = [d for d in _all_devices() if d["category"] == "camera" or "camera" in d["roles"]]
     for cam in cams:
         cam["videoNodes"] = [n["path"] for n in cam["devNodes"] if n["type"] == "video"]
-    return urirun.ok(connector=CONNECTOR_ID, count=len(cams), cameras=cams)
+    return urirun.ok(connector=CONNECTOR_ID, kind="device-list", live=False, count=len(cams), cameras=cams)
 
 
 @USB.handler("input/query/list", isolated=True,
@@ -427,7 +427,7 @@ def input_devices(kind: str = "") -> dict[str, Any]:
         if want and want not in d["roles"]:
             continue
         devices.append(d)
-    return urirun.ok(connector=CONNECTOR_ID, count=len(devices), devices=devices)
+    return urirun.ok(connector=CONNECTOR_ID, kind="device-list", live=False, count=len(devices), devices=devices)
 
 
 def urirun_bindings() -> dict[str, Any]:
