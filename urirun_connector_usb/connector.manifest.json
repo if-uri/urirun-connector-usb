@@ -1,12 +1,75 @@
 {
   "id": "usb",
   "name": "USB devices",
-  "uriSchemes": ["usb"],
+  "uriSchemes": [
+    "usb"
+  ],
   "status": "available",
   "category": "Hardware",
   "summary": "Enumerate and classify the USB devices plugged into a computer over usb:// URIs. Reads the kernel's sysfs view (no root, no extra deps), labels each device by USB class codes (camera/webcam, keyboard, mouse, audio, storage, hub, printer, bluetooth, serial, smart-card/security-key) and maps it to the /dev nodes it owns (/dev/video*, /dev/input/*, /dev/ttyUSB*, /dev/hidraw*).",
   "description": "usb:// answers 'what is physically connected to this machine?' as a first-class URI instead of ad-hoc lsusb parsing. usb://host/devices/query/list returns every device with a friendly category, roles, vendor/product ids and the device nodes it exposes. usb://host/devices/query/find searches by name, vendor:product or category. usb://host/cameras/query/list returns only USB cameras with their /dev/video* capture nodes — the discovery layer the camera connector builds on. usb://host/input/query/list returns keyboards, mice and other HID gear with their /dev/input nodes. usb://host/devices/query/probe reports host support. Built on Linux sysfs (/sys/bus/usb/devices) and /sys/class/* node mapping; lsusb is used only to fill in nicer vendor/product names.",
-  "requires": {"system": ["linux sysfs (/sys/bus/usb)"], "python": ["urirun"], "optional": ["lsusb (nicer names)", "pyusb"]},
-  "keywords": ["usb", "devices", "hardware", "camera", "webcam", "keyboard", "mouse", "hid", "lsusb", "sysfs", "v4l2", "security-key", "bluetooth"],
-  "publisher": "if-uri"
+  "requires": {
+    "system": [
+      "linux sysfs (/sys/bus/usb)"
+    ],
+    "python": [
+      "urirun"
+    ],
+    "optional": [
+      "lsusb (nicer names)",
+      "pyusb"
+    ]
+  },
+  "keywords": [
+    "usb",
+    "devices",
+    "hardware",
+    "camera",
+    "webcam",
+    "keyboard",
+    "mouse",
+    "hid",
+    "lsusb",
+    "sysfs",
+    "v4l2",
+    "security-key",
+    "bluetooth"
+  ],
+  "publisher": {
+    "name": "if-uri",
+    "url": "https://ifuri.com",
+    "github": "https://github.com/if-uri"
+  },
+  "routes": [
+    "usb://host/devices/query/list",
+    "usb://host/devices/query/find",
+    "usb://host/cameras/query/list",
+    "usb://host/input/query/list",
+    "usb://host/devices/query/probe"
+  ],
+  "useCases": [
+    "List every USB device with a friendly category.",
+    "Find USB cameras and their /dev/video* nodes.",
+    "Enumerate keyboards and mice with their /dev/input nodes."
+  ],
+  "examples": [
+    {
+      "title": "List USB devices",
+      "uri": "usb://host/devices/query/list",
+      "payload": {}
+    },
+    {
+      "title": "Find by name",
+      "uri": "usb://host/devices/query/find",
+      "payload": {
+        "q": "webcam"
+      }
+    }
+  ],
+  "provenance": "verified",
+  "docsUrl": "https://github.com/if-uri/urirun-connector-usb",
+  "install": {
+    "mode": "urirun-extra",
+    "pipSpec": "urirun-connector-usb @ git+https://github.com/if-uri/urirun-connector-usb.git@v0.1.0"
+  }
 }
