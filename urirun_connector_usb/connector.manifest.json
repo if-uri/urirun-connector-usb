@@ -41,11 +41,11 @@
     "github": "https://github.com/if-uri"
   },
   "routes": [
-    "usb://host/devices/query/list",
-    "usb://host/devices/query/find",
     "usb://host/cameras/query/list",
-    "usb://host/input/query/list",
-    "usb://host/devices/query/probe"
+    "usb://host/devices/query/find",
+    "usb://host/devices/query/list",
+    "usb://host/devices/query/probe",
+    "usb://host/input/query/list"
   ],
   "useCases": [
     "List every USB device with a friendly category.",
@@ -71,5 +71,8 @@
   "install": {
     "mode": "urirun-extra",
     "pipSpec": "urirun-connector-usb @ git+https://github.com/if-uri/urirun-connector-usb.git@v0.1.0"
-  }
+  },
+  "adapterKinds": [
+    "local-function"
+  ]
 }
