@@ -125,6 +125,34 @@ def _interfaces(dev_dir: str, dev_name: str) -> list[dict[str, Any]]:
     return out
 
 
+_CLASS_TO_ROLE: dict[int, str] = {
+    0x0E: "camera", 0x10: "camera",   # video / audio-video
+    0x06: "scanner",                   # still-image (PTP)
+    0x08: "storage",                   # mass storage
+    0x07: "printer",
+    0x01: "audio",
+    0x09: "hub",
+    0x0B: "smart-card",               # incl. FIDO security keys
+    0x02: "serial", 0x0A: "serial",   # CDC / CDC-data
+}
+
+
+def _class_to_role(cls: int | None, sub: int | None, proto: int | None) -> str | None:
+    if cls is None:
+        return None
+    if cls in _CLASS_TO_ROLE:
+        return _CLASS_TO_ROLE[cls]
+    if cls == 0x03:   # HID: keyboard=1, mouse=2, other=hid
+        if proto == 1:
+            return "keyboard"
+        if proto == 2:
+            return "mouse"
+        return "hid"
+    if cls == 0xE0:   # wireless: bluetooth sub=01/proto=01
+        return "bluetooth" if sub == 0x01 and proto == 0x01 else "wireless"
+    return USB_CLASS.get(cls)
+
+
 def _roles(dev_class: int | None, interfaces: list[dict[str, Any]]) -> list[str]:
     """Map USB class codes to friendly roles. A device can have several (e.g. a combo
     keyboard that also presents a mouse interface)."""
@@ -134,8 +162,6 @@ def _roles(dev_class: int | None, interfaces: list[dict[str, Any]]) -> list[str]
         if role not in roles:
             roles.append(role)
 
-    # Gather every class that the device advertises: the device descriptor itself plus
-    # each interface (devices with bDeviceClass == 0 defer entirely to their interfaces).
     classes: list[tuple[int | None, int | None, int | None]] = []
     if dev_class not in (None, 0x00):
         classes.append((dev_class, None, None))
@@ -143,38 +169,9 @@ def _roles(dev_class: int | None, interfaces: list[dict[str, Any]]) -> list[str]
         classes.append((iface.get("class"), iface.get("subClass"), iface.get("protocol")))
 
     for cls, sub, proto in classes:
-        if cls == 0x0E or cls == 0x10:          # video / audio-video
-            add("camera")
-        elif cls == 0x06:                       # still-image (PTP) → scanner/camera
-            add("scanner")
-        elif cls == 0x03:                       # HID
-            if proto == 1:
-                add("keyboard")
-            elif proto == 2:
-                add("mouse")
-            else:
-                add("hid")
-        elif cls == 0x08:                       # mass storage
-            add("storage")
-        elif cls == 0x07:                       # printer
-            add("printer")
-        elif cls == 0x01:                       # audio
-            add("audio")
-        elif cls == 0x09:                       # hub
-            add("hub")
-        elif cls == 0x0B:                       # smart card (incl. FIDO security keys)
-            add("smart-card")
-        elif cls == 0xE0:                       # wireless
-            if sub == 0x01 and proto == 0x01:
-                add("bluetooth")
-            else:
-                add("wireless")
-        elif cls in (0x02, 0x0A):               # CDC / CDC-data → serial / network
-            add("serial")
-        else:
-            name = USB_CLASS.get(cls or -1)
-            if name:
-                add(name)
+        role = _class_to_role(cls, sub, proto)
+        if role:
+            add(role)
     return roles
 
 
