@@ -7,6 +7,7 @@ from urirun_connectors_toolkit.contract_gate import Contract
 
 _DEVICE = {"vendorId": "str", "productId": "str", "name": "str",
            "category": "str", "roles": "list", "isHub": "bool"}
+_ERROR = {"ok": "const:false", "connector": "const:usb", "error": "str"}
 
 CONTRACTS: dict[str, Contract] = {
     "devices/query/probe": Contract(
@@ -40,7 +41,10 @@ CONTRACTS: dict[str, Contract] = {
         effect="query",
         reversible=False,
         inp={"include_hubs": "?bool", "category": "?str"},
-        out={"ok": "bool", "count": "int", "summary": "obj", "devices": [_DEVICE]},
+        out={"oneOf": [
+            {"ok": "const:true", "count": "int", "summary": "obj", "devices": [_DEVICE]},
+            _ERROR,
+        ]},
         errors=("precondition-unmet",),
         examples=(
             {
@@ -65,7 +69,10 @@ CONTRACTS: dict[str, Contract] = {
         reversible=False,
         inp={"query": "?str", "vendor_id": "?str", "product_id": "?str",
              "category": "?str", "include_hubs": "?bool"},
-        out={"ok": "bool", "count": "int", "devices": [_DEVICE]},
+        out={"oneOf": [
+            {"ok": "const:true", "count": "int", "devices": [_DEVICE]},
+            _ERROR,
+        ]},
         errors=("precondition-unmet",),
         examples=(
             {
@@ -86,7 +93,10 @@ CONTRACTS: dict[str, Contract] = {
         effect="query",
         reversible=False,
         inp={},
-        out={"ok": "bool", "count": "int", "summary": "obj", "devices": "list"},
+        out={"oneOf": [
+            {"ok": "const:true", "count": "int", "cameras": "list"},
+            _ERROR,
+        ]},
         errors=(),
         examples=(
             {
@@ -95,10 +105,9 @@ CONTRACTS: dict[str, Contract] = {
                     "ok": True,
                     "connector": "usb",
                     "count": 1,
-                    "summary": {"camera": 1},
-                    "devices": [{"vendorId": "046d", "productId": "085e",
-                                  "name": "Logitech BRIO", "category": "camera",
-                                  "roles": ["camera"], "isHub": False}],
+                    "cameras": [{"vendorId": "046d", "productId": "085e",
+                                 "name": "Logitech BRIO", "category": "camera",
+                                 "roles": ["camera"], "isHub": False}],
                 },
             },
         ),
@@ -108,7 +117,10 @@ CONTRACTS: dict[str, Contract] = {
         effect="query",
         reversible=False,
         inp={"kind": "?str"},
-        out={"ok": "bool", "count": "int", "summary": "obj", "devices": "list"},
+        out={"oneOf": [
+            {"ok": "const:true", "count": "int", "devices": "list"},
+            _ERROR,
+        ]},
         errors=(),
         examples=(
             {
@@ -117,7 +129,6 @@ CONTRACTS: dict[str, Contract] = {
                     "ok": True,
                     "connector": "usb",
                     "count": 0,
-                    "summary": {},
                     "devices": [],
                 },
             },

@@ -82,16 +82,11 @@ def test_cameras_live_shape():
 
 def test_contract_output_shape() -> None:
     """devices/query/probe live output must satisfy the declared out-schema."""
-    import importlib.util, sys
-    sys.path.insert(0, "/home/tom/github/if-uri/urirun-contract")
-    from urirun_connectors_toolkit.contract_gate import validate_output
-    spec = importlib.util.spec_from_file_location(
-        "contracts_usb",
-        "/home/tom/github/if-uri/urirun-connector-usb/urirun_connector_usb/contracts.py",
-    )
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    from urirun_connectors_toolkit.contract_gate import conform, validate_output
+    from urirun_connector_usb.contracts import CONTRACTS
+
+    conform(CONTRACTS)
 
     result = c.probe()
     assert result["ok"] is True
-    validate_output(mod.CONTRACTS["devices/query/probe"], result)
+    validate_output(CONTRACTS["devices/query/probe"], result)
